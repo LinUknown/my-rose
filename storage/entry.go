@@ -22,6 +22,9 @@ const (
 	String uint16 = iota
 )
 
+// Entry bitcask思想中，数据操作日志的最小单位，每一个对象，都是对kv键值对对操作日志
+// 存储了数据的k、v， 数据类型，操作op类型
+// 封装了序列化、反序列化能力
 type Entry struct {
 	Meta  *Meta
 	Type  uint16 //数据类型
