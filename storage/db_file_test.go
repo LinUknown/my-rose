@@ -44,7 +44,7 @@ func TestNewDBFile(t *testing.T) {
 	}
 }
 
-func TestDBFIle_Write(t *testing.T) {
+func TestDBFile_Write(t *testing.T) {
 	entry2 := &Entry{
 		Meta: &Meta{
 			Key:   []byte("test_key_002"),
@@ -83,7 +83,7 @@ func TestDBFIle_Write(t *testing.T) {
 	}
 }
 
-func TestDBFIle_Read(t *testing.T) {
+func TestDBFile_Read(t *testing.T) {
 	dirFilePath := "/tmp/myRose/test/"
 	df, err := NewDBFile(dirFilePath, 2, FileIO)
 	if err != nil {

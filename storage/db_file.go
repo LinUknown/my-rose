@@ -31,9 +31,9 @@ const (
 	PathSeparator = string(os.PathSeparator)
 )
 
-// DBFIle 表示一个日志集合，对于每一次操作日志，都会写到一个日志集合
+// DBFile 表示一个日志集合，对于每一次操作日志，都会写到一个日志集合
 // 写满了之后，封存到文件中，重新创建一个新的DBFile用于写入
-type DBFIle struct {
+type DBFile struct {
 	Id     uint32
 	path   string
 	File   *os.File
@@ -42,7 +42,7 @@ type DBFIle struct {
 }
 
 // Read 从文件的offset开始，中读取一个entry,
-func (df *DBFIle) Read(offSet int64) (*Entry, error) {
+func (df *DBFile) Read(offSet int64) (*Entry, error) {
 
 	nextOffset, entry, err := df.BuildEntryHead(offSet)
 	if err != nil {
@@ -64,7 +64,7 @@ func (df *DBFIle) Read(offSet int64) (*Entry, error) {
 	return entry, nil
 }
 
-func (df *DBFIle) BuildEntryKey(entry *Entry, offset int64) (int64, error) {
+func (df *DBFile) BuildEntryKey(entry *Entry, offset int64) (int64, error) {
 	buf, err := df.readBuf(offset, int64(entry.Meta.KeySize))
 	if err != nil {
 		return 0, err
@@ -73,7 +73,7 @@ func (df *DBFIle) BuildEntryKey(entry *Entry, offset int64) (int64, error) {
 	return offset + int64(entry.Meta.KeySize), nil
 }
 
-func (df *DBFIle) BuildEntryValue(entry *Entry, offset int64) (int64, error) {
+func (df *DBFile) BuildEntryValue(entry *Entry, offset int64) (int64, error) {
 	buf, err := df.readBuf(offset, int64(entry.Meta.ValueSize))
 	if err != nil {
 		return 0, err
@@ -87,7 +87,7 @@ func (df *DBFIle) BuildEntryValue(entry *Entry, offset int64) (int64, error) {
 	return offset + int64(entry.Meta.ValueSize), nil
 }
 
-func (df *DBFIle) BuildEntryExtra(entry *Entry, offset int64) (int64, error) {
+func (df *DBFile) BuildEntryExtra(entry *Entry, offset int64) (int64, error) {
 	buf, err := df.readBuf(offset, int64(entry.Meta.ExtraSize))
 	if err != nil {
 		return 0, err
@@ -96,7 +96,7 @@ func (df *DBFIle) BuildEntryExtra(entry *Entry, offset int64) (int64, error) {
 	return offset + int64(entry.Meta.ExtraSize), nil
 }
 
-func (df *DBFIle) BuildEntryHead(beginOffset int64) (int64, *Entry, error) {
+func (df *DBFile) BuildEntryHead(beginOffset int64) (int64, *Entry, error) {
 	// 下面两步，应该封装成一个方法。 作用是取出一个entry的头部
 	buf, err := df.readBuf(beginOffset, entryHeaderSize)
 	if err != nil {
@@ -111,7 +111,7 @@ func (df *DBFIle) BuildEntryHead(beginOffset int64) (int64, *Entry, error) {
 	return beginOffset + entryHeaderSize, entry, nil
 }
 
-func (df *DBFIle) Write(entry *Entry) error {
+func (df *DBFile) Write(entry *Entry) error {
 	if entry == nil || entry.Meta.KeySize == 0 {
 		return ErrEmptyEntry
 	}
@@ -133,8 +133,8 @@ func (df *DBFIle) Write(entry *Entry) error {
 // Build 从文件夹中，构建DBFile的字典，key是递增的file_id
 // 函数会返回当前最大的file_id
 // 上层通过最大的file_id, 遍历这个map，得到所有的日志集合
-func Build(dirPath string) (map[uint32]*DBFIle, uint32, error) {
-	// read dir, get all dbfile
+func Build(dirPath string) (map[uint32]*DBFile, uint32, error) {
+	// read dir, get all DBFile
 	// get all db file ids
 	// sort, build for a map
 
@@ -154,7 +154,7 @@ func Build(dirPath string) (map[uint32]*DBFIle, uint32, error) {
 
 	sort.Ints(fileIds)
 	activeFileId := uint32(0)
-	archFiles := make(map[uint32]*DBFIle)
+	archFiles := make(map[uint32]*DBFile)
 	if len(fileIds) == 0 {
 		return archFiles, activeFileId, nil
 	}
@@ -173,8 +173,8 @@ func Build(dirPath string) (map[uint32]*DBFIle, uint32, error) {
 
 }
 
-// 根据文件夹地址和文件id， 打开文件具柄， 封装成dbfile对象
-func NewDBFile(fileDirPath string, fileId uint32, method FileRWMethod) (*DBFIle, error) {
+// 根据文件夹地址和文件id， 打开文件具柄， 封装成DBFile对象
+func NewDBFile(fileDirPath string, fileId uint32, method FileRWMethod) (*DBFile, error) {
 	filePath := fileDirPath + PathSeparator + fmt.Sprintf(DBFileFormatName, fileId)
 
 	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, FilePerm)
@@ -182,7 +182,7 @@ func NewDBFile(fileDirPath string, fileId uint32, method FileRWMethod) (*DBFIle,
 		return nil, err
 	}
 
-	df := &DBFIle{
+	df := &DBFile{
 		Id:     fileId,
 		path:   filePath,
 		File:   file,
@@ -193,7 +193,7 @@ func NewDBFile(fileDirPath string, fileId uint32, method FileRWMethod) (*DBFIle,
 }
 
 // 对文件系统里，文件的读取操作
-func (df *DBFIle) readBuf(offset int64, n int64) ([]byte, error) {
+func (df *DBFile) readBuf(offset int64, n int64) ([]byte, error) {
 
 	buf := make([]byte, n)
 	_, err := df.File.ReadAt(buf, offset)
@@ -203,9 +203,9 @@ func (df *DBFIle) readBuf(offset int64, n int64) ([]byte, error) {
 	return buf, nil
 }
 
-func (df *DBFIle) Close(sync bool) error {
+func (df *DBFile) Close(sync bool) error {
 	if sync {
-		err := df.sync()
+		err := df.Sync()
 		if err != nil {
 			return err
 		}
@@ -215,7 +215,7 @@ func (df *DBFIle) Close(sync bool) error {
 	return err
 }
 
-func (df *DBFIle) sync() error {
+func (df *DBFile) Sync() error {
 	err := df.File.Sync()
 	return err
 }
