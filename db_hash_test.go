@@ -21,7 +21,7 @@ func TestMyRose_HSet(t *testing.T) {
 	}
 
 	// 下一步把这两个数据结构持久化，就能实现完整的数据库的持久化了
-	hashIndex := hash.BuildHashIndex()
+	hashIndex := hash.New()
 	meta := &storage.DBMeta{
 		ActiveWriteOff: 0,
 	}

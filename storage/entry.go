@@ -20,6 +20,7 @@ const (
 
 const (
 	String uint16 = iota
+	Hash
 )
 
 // Entry bitcask思想中，数据操作日志的最小单位，每一个对象，都是对kv键值对对操作日志

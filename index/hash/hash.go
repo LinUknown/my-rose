@@ -7,7 +7,7 @@ type Hash struct {
 	record Record
 }
 
-func BuildHashIndex() *Hash {
+func New() *Hash {
 	return &Hash{
 		record: make(Record),
 	}
