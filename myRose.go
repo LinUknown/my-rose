@@ -70,7 +70,6 @@ func (db *MyRose) buildIndex(entry *storage.Entry) {
 	switch entry.Type {
 	case storage.Hash:
 		db.buildHashIndex(entry)
-
 	}
 }
 

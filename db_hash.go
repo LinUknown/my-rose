@@ -22,3 +22,14 @@ func (db *MyRose) HSet(key, field, value []byte) (res int, err error) {
 	res = db.hashIndex.HSet(string(key), string(field), value)
 	return
 }
+
+func (db *MyRose) HDel(key, field []byte) (res int, err error) {
+	entry := storage.NewEntry(key, nil, field, Hash, HashHDel)
+	err = db.store(entry)
+	if err != nil {
+		return
+	}
+
+	res = db.hashIndex.HDel(string(key), string(field))
+	return
+}

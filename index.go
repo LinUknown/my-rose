@@ -54,7 +54,7 @@ func (db *MyRose) buildHashIndex(entry *storage.Entry) {
 	switch entry.Mark {
 	case HashHSet:
 		db.hashIndex.HSet(string(entry.Meta.Key), string(entry.Meta.Extra), entry.Meta.Value)
-		//case HashHDel:
-		//	db.hashIndex.HDel(string(idx.Meta.Key), string(idx.Meta.Value))
+	case HashHDel:
+		db.hashIndex.HDel(string(entry.Meta.Key), string(entry.Meta.Extra))
 	}
 }

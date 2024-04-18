@@ -27,6 +27,15 @@ func (h *Hash) HSet(key string, field string, value []byte) int {
 	return len(h.record[key])
 }
 
+func (h *Hash) HDel(key string, field string) int {
+	if !h.exist(key) {
+		return 0
+	}
+
+	delete(h.record[key], field)
+	return len(h.record[key])
+}
+
 func (h *Hash) HGet(key string, field string) (value []byte) {
 	if !h.exist(key) {
 		return nil
