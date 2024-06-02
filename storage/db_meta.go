@@ -10,6 +10,10 @@ type DBMeta struct {
 	ActiveWriteOff int64 `json:"active_write_off"`
 }
 
+// LoadMeta 从文件中加载DBMeta
+// @param path 文件路径
+// @return error 错误信息
+// @return *DBMeta DBMeta对象
 func LoadMeta(path string) (e error, m *DBMeta) {
 	m = &DBMeta{}
 

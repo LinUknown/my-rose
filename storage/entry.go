@@ -28,7 +28,7 @@ const (
 // 封装了序列化、反序列化能力
 type Entry struct {
 	Meta  *Meta
-	Type  uint16 //数据类型
+	Type  uint16 //数据类型, hash or string， 目前只支持了hash
 	Mark  uint16 //数据op类型
 	crc32 uint32 //校验和
 }

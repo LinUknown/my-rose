@@ -131,18 +131,19 @@ func (df *DBFile) Write(entry *Entry) error {
 }
 
 // Build 从文件夹中，构建DBFile的字典，key是递增的file_id
-// 函数会返回当前最大的file_id
-// 上层通过最大的file_id, 遍历这个map，得到所有的日志集合
+// @description: 函数会返回当前最大的file_id。调用方通过最大的file_id, 遍历这个map，得到所有的日志集合
+// @param: dirPath string 数据文件夹地址
+// @return: map[uint32]*DBFile	数据目录下，所有的数据文件的map,
+//
+//			uint32	数据目录下最大的数据文件id
+//	 		error
 func Build(dirPath string) (map[uint32]*DBFile, uint32, error) {
-	// read dir, get all DBFile
-	// get all db file ids
-	// sort, build for a map
-
 	dir, err := ioutil.ReadDir(dirPath)
 	if err != nil {
 		return nil, 0, err
 	}
 
+	// 遍历数据文件夹，找出所有的数据文件， 返回数据文件id的列表
 	var fileIds []int
 	for _, fileItem := range dir {
 		if strings.HasSuffix(fileItem.Name(), "data") {
@@ -159,6 +160,7 @@ func Build(dirPath string) (map[uint32]*DBFile, uint32, error) {
 		return archFiles, activeFileId, nil
 	}
 
+	// 对于每一个数据文件，创建一个DBFile对象, 并通过{id:DBFile}的字典返回
 	activeFileId = uint32(fileIds[len(fileIds)-1])
 	for i := 0; i < len(fileIds); i++ {
 		fileId := fileIds[i]
@@ -173,7 +175,12 @@ func Build(dirPath string) (map[uint32]*DBFile, uint32, error) {
 
 }
 
-// 根据文件夹地址和文件id， 打开文件具柄， 封装成DBFile对象
+// NewDBFile
+// @description: 根据文件夹地址和文件id， 打开文件具柄， 封装成DBFile对象
+// @param: fileDirPath string	数据文件夹地址
+// @param: fileId uint32	数据文件id
+// @param: method FileRWMethod	文件读写方式
+// @return: *DBFile
 func NewDBFile(fileDirPath string, fileId uint32, method FileRWMethod) (*DBFile, error) {
 	filePath := fileDirPath + PathSeparator + fmt.Sprintf(DBFileFormatName, fileId)
 
